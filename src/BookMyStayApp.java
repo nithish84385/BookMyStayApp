@@ -1,26 +1,52 @@
+import java.util.LinkedList;
+import java.util.Queue;
 
+class Reservation {
+    String guestName;
+    String roomType;
 
-/**
- * BookMyStayApp
- *
- * Entry point for the Hotel Booking Management System.
- * Demonstrates how a Java application starts execution
- * and prints a welcome message to the console.
- *
- * @author Nithish DR
- * @version 1.0
- */
+    Reservation(String guestName, String roomType) {
+        this.guestName = guestName;
+        this.roomType = roomType;
+    }
+
+    void display() {
+        System.out.println("Guest: " + guestName + " | Requested Room: " + roomType);
+    }
+}
+
+class BookingRequestQueue {
+    private Queue<Reservation> queue;
+
+    BookingRequestQueue() {
+        queue = new LinkedList<>();
+    }
+
+    void addRequest(Reservation reservation) {
+        queue.offer(reservation);
+        System.out.println("Request added for " + reservation.guestName);
+    }
+
+    void displayQueue() {
+        System.out.println("Current Booking Queue");
+        System.out.println("=====================");
+
+        for (Reservation r : queue) {
+            r.display();
+        }
+    }
+}
 
 public class BookMyStayApp {
-
     public static void main(String[] args) {
 
-        System.out.println("=================================");
-        System.out.println(" Welcome to BookMyStayApp ");
-        System.out.println(" Hotel Booking System v1.0 ");
-        System.out.println("=================================");
+        BookingRequestQueue bookingQueue = new BookingRequestQueue();
 
-        System.out.println("Application started successfully.");
-        System.out.println("Application terminated.");
+        bookingQueue.addRequest(new Reservation("Alice", "Single Room"));
+        bookingQueue.addRequest(new Reservation("Bob", "Double Room"));
+        bookingQueue.addRequest(new Reservation("Charlie", "Suite Room"));
+
+        System.out.println();
+        bookingQueue.displayQueue();
     }
 }
