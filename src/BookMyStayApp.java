@@ -3,76 +3,61 @@ import java.util.*;
 class Reservation {
     String guestName;
     String roomType;
+    String reservationId;
 
-    Reservation(String guestName, String roomType) {
+    Reservation(String reservationId, String guestName, String roomType) {
+        this.reservationId = reservationId;
         this.guestName = guestName;
         this.roomType = roomType;
     }
-}
 
-class RoomInventory {
-    private HashMap<String, Integer> inventory;
-
-    RoomInventory() {
-        inventory = new HashMap<>();
-        inventory.put("Single Room", 2);
-        inventory.put("Double Room", 1);
-        inventory.put("Suite Room", 1);
-    }
-
-    int getAvailability(String roomType) {
-        return inventory.getOrDefault(roomType, 0);
-    }
-
-    void reduceAvailability(String roomType) {
-        inventory.put(roomType, getAvailability(roomType) - 1);
+    void display() {
+        System.out.println(reservationId + " | " + guestName + " | " + roomType);
     }
 }
 
-class BookingService {
+class BookingHistory {
 
-    private Queue<Reservation> queue;
-    private HashMap<String, Set<String>> allocatedRooms;
+    private List<Reservation> history;
 
-    BookingService() {
-        queue = new LinkedList<>();
-        allocatedRooms = new HashMap<>();
+    BookingHistory() {
+        history = new ArrayList<>();
     }
 
-    void addRequest(Reservation r) {
-        queue.add(r);
+    void addReservation(Reservation r) {
+        history.add(r);
     }
 
-    void processBookings(RoomInventory inventory) {
+    List<Reservation> getAllReservations() {
+        return history;
+    }
+}
 
-        System.out.println("Processing Bookings");
-        System.out.println("===================");
+class BookingReportService {
 
-        while (!queue.isEmpty()) {
+    void displayAllBookings(List<Reservation> reservations) {
 
-            Reservation r = queue.poll();
-            String type = r.roomType;
+        System.out.println("Booking History");
+        System.out.println("================");
 
-            if (inventory.getAvailability(type) > 0) {
+        for (Reservation r : reservations) {
+            r.display();
+        }
+    }
 
-                String roomId = type.substring(0, 2).toUpperCase() + (int)(Math.random() * 100);
+    void generateSummary(List<Reservation> reservations) {
 
-                allocatedRooms.putIfAbsent(type, new HashSet<>());
+        Map<String, Integer> summary = new HashMap<>();
 
-                Set<String> assigned = allocatedRooms.get(type);
+        for (Reservation r : reservations) {
+            summary.put(r.roomType, summary.getOrDefault(r.roomType, 0) + 1);
+        }
 
-                while (assigned.contains(roomId)) {
-                    roomId = type.substring(0, 2).toUpperCase() + (int)(Math.random() * 100);
-                }
+        System.out.println("\nBooking Summary");
+        System.out.println("================");
 
-                assigned.add(roomId);
-                inventory.reduceAvailability(type);
-
-                System.out.println("Booking Confirmed: " + r.guestName + " -> " + roomId);
-
-            } else {
-                System.out.println("Booking Failed (No Availability): " + r.guestName);
-            }
+        for (Map.Entry<String, Integer> entry : summary.entrySet()) {
+            System.out.println(entry.getKey() + " : " + entry.getValue());
         }
     }
 }
@@ -81,15 +66,15 @@ public class BookMyStayApp {
 
     public static void main(String[] args) {
 
-        RoomInventory inventory = new RoomInventory();
-        BookingService service = new BookingService();
+        BookingHistory history = new BookingHistory();
 
-        service.addRequest(new Reservation("Alice", "Single Room"));
-        service.addRequest(new Reservation("Bob", "Single Room"));
-        service.addRequest(new Reservation("Charlie", "Single Room"));
+        history.addReservation(new Reservation("RES-1", "Alice", "Single Room"));
+        history.addReservation(new Reservation("RES-2", "Bob", "Double Room"));
+        history.addReservation(new Reservation("RES-3", "Charlie", "Single Room"));
 
-        service.addRequest(new Reservation("David", "Suite Room"));
+        BookingReportService reportService = new BookingReportService();
 
-        service.processBookings(inventory);
+        reportService.displayAllBookings(history.getAllReservations());
+        reportService.generateSummary(history.getAllReservations());
     }
 }
