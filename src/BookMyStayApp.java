@@ -1,26 +1,60 @@
+import java.util.*;
 
+class Service {
+    String name;
+    double price;
 
-/**
- * BookMyStayApp
- *
- * Entry point for the Hotel Booking Management System.
- * Demonstrates how a Java application starts execution
- * and prints a welcome message to the console.
- *
- * @author Nithish DR
- * @version 1.0
- */
+    Service(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+}
+
+class AddOnServiceManager {
+
+    private Map<String, List<Service>> serviceMap = new HashMap<>();
+
+    void addService(String reservationId, Service service) {
+        serviceMap.putIfAbsent(reservationId, new ArrayList<>());
+        serviceMap.get(reservationId).add(service);
+    }
+
+    void displayServices(String reservationId) {
+        List<Service> services = serviceMap.getOrDefault(reservationId, new ArrayList<>());
+
+        System.out.println("Services for Reservation ID: " + reservationId);
+
+        for (Service s : services) {
+            System.out.println(s.name + " - $" + s.price);
+        }
+    }
+
+    double calculateTotalCost(String reservationId) {
+        List<Service> services = serviceMap.getOrDefault(reservationId, new ArrayList<>());
+        double total = 0;
+
+        for (Service s : services) {
+            total += s.price;
+        }
+
+        return total;
+    }
+}
 
 public class BookMyStayApp {
 
     public static void main(String[] args) {
 
-        System.out.println("=================================");
-        System.out.println(" Welcome to BookMyStayApp ");
-        System.out.println(" Hotel Booking System v1.0 ");
-        System.out.println("=================================");
+        AddOnServiceManager manager = new AddOnServiceManager();
 
-        System.out.println("Application started successfully.");
-        System.out.println("Application terminated.");
+        String reservationId = "RES-101";
+
+        manager.addService(reservationId, new Service("Breakfast", 10));
+        manager.addService(reservationId, new Service("Airport Pickup", 25));
+        manager.addService(reservationId, new Service("Extra Bed", 15));
+
+        manager.displayServices(reservationId);
+
+        System.out.println("Total Add-On Cost: $" + manager.calculateTotalCost(reservationId));
     }
 }
