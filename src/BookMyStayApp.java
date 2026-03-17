@@ -1,4 +1,5 @@
-import java.util.*;
+import java.util.LinkedList;
+import java.util.Queue;
 
 class Reservation {
     String guestName;
@@ -8,86 +9,31 @@ class Reservation {
         this.guestName = guestName;
         this.roomType = roomType;
     }
-}
 
-class RoomInventory {
-    private Map<String, Integer> inventory;
-
-    RoomInventory() {
-        inventory = new HashMap<>();
-        inventory.put("Single Room", 2);
-        inventory.put("Double Room", 2);
-        inventory.put("Suite Room", 1);
-    }
-
-    int getAvailability(String roomType) {
-        return inventory.getOrDefault(roomType, 0);
-    }
-
-    void decrement(String roomType) {
-        inventory.put(roomType, inventory.get(roomType) - 1);
-    }
-
-    void displayInventory() {
-        System.out.println("Current Inventory");
-        for (Map.Entry<String, Integer> e : inventory.entrySet()) {
-            System.out.println(e.getKey() + " : " + e.getValue());
-        }
+    void display() {
+        System.out.println("Guest: " + guestName + ", Room Type: " + roomType);
     }
 }
 
-class BookingRequestQueue {
+class BookingQueue {
+
     private Queue<Reservation> queue;
 
-    BookingRequestQueue() {
+    BookingQueue() {
         queue = new LinkedList<>();
     }
 
-    void addRequest(Reservation r) {
-        queue.offer(r);
+    void addRequest(Reservation reservation) {
+        queue.add(reservation);
+        System.out.println("Added to queue: " + reservation.guestName);
     }
 
-    Reservation nextRequest() {
-        return queue.poll();
-    }
+    void displayQueue() {
+        System.out.println("\nBooking Request Queue (FIFO)");
+        System.out.println("============================");
 
-    boolean hasRequests() {
-        return !queue.isEmpty();
-    }
-}
-
-class BookingService {
-
-    private Map<String, Set<String>> allocatedRooms = new HashMap<>();
-    private Set<String> usedRoomIds = new HashSet<>();
-    private int idCounter = 1;
-
-    void processRequests(BookingRequestQueue queue, RoomInventory inventory) {
-
-        while (queue.hasRequests()) {
-
-            Reservation r = queue.nextRequest();
-            String roomType = r.roomType;
-
-            if (inventory.getAvailability(roomType) > 0) {
-
-                String roomId = roomType.replace(" ", "") + "-" + idCounter++;
-                usedRoomIds.add(roomId);
-
-                allocatedRooms.putIfAbsent(roomType, new HashSet<>());
-                allocatedRooms.get(roomType).add(roomId);
-
-                inventory.decrement(roomType);
-
-                System.out.println("Reservation Confirmed");
-                System.out.println("Guest: " + r.guestName);
-                System.out.println("Room Type: " + roomType);
-                System.out.println("Room ID: " + roomId);
-                System.out.println("----------------------");
-
-            } else {
-                System.out.println("Reservation Failed for " + r.guestName + " (No availability)");
-            }
+        for (Reservation r : queue) {
+            r.display();
         }
     }
 }
@@ -96,18 +42,12 @@ public class BookMyStayApp {
 
     public static void main(String[] args) {
 
-        RoomInventory inventory = new RoomInventory();
-        BookingRequestQueue queue = new BookingRequestQueue();
-        BookingService service = new BookingService();
+        BookingQueue bookingQueue = new BookingQueue();
 
-        queue.addRequest(new Reservation("Alice", "Single Room"));
-        queue.addRequest(new Reservation("Bob", "Double Room"));
-        queue.addRequest(new Reservation("Charlie", "Suite Room"));
-        queue.addRequest(new Reservation("David", "Suite Room"));
+        bookingQueue.addRequest(new Reservation("Alice", "Single Room"));
+        bookingQueue.addRequest(new Reservation("Bob", "Double Room"));
+        bookingQueue.addRequest(new Reservation("Charlie", "Suite Room"));
 
-        service.processRequests(queue, inventory);
-
-        System.out.println();
-        inventory.displayInventory();
+        bookingQueue.displayQueue();
     }
 }
