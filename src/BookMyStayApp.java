@@ -1,40 +1,43 @@
+import java.io.*;
 import java.util.*;
 
-class RoomInventory {
+class RoomInventory implements Serializable {
 
     private Map<String, Integer> inventory = new HashMap<>();
 
     RoomInventory() {
         inventory.put("Single Room", 2);
+        inventory.put("Double Room", 1);
     }
 
-    synchronized boolean bookRoom(String roomType, String guest) {
-
-        int available = inventory.getOrDefault(roomType, 0);
-
-        if (available > 0) {
-            inventory.put(roomType, available - 1);
-            System.out.println(guest + " booked successfully. Remaining: " + (available - 1));
-            return true;
-        } else {
-            System.out.println(guest + " booking failed (No availability)");
-            return false;
-        }
+    Map<String, Integer> getInventory() {
+        return inventory;
     }
 }
 
-class BookingTask implements Runnable {
+class PersistenceService {
 
-    private RoomInventory inventory;
-    private String guestName;
+    private static final String FILE_NAME = "data.ser";
 
-    BookingTask(RoomInventory inventory, String guestName) {
-        this.inventory = inventory;
-        this.guestName = guestName;
+    void save(RoomInventory inventory) {
+
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
+            out.writeObject(inventory);
+            System.out.println("State saved successfully.");
+        } catch (Exception e) {
+            System.out.println("Error saving data.");
+        }
     }
 
-    public void run() {
-        inventory.bookRoom("Single Room", guestName);
+    RoomInventory load() {
+
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(FILE_NAME))) {
+            System.out.println("State loaded successfully.");
+            return (RoomInventory) in.readObject();
+        } catch (Exception e) {
+            System.out.println("No previous data found. Starting fresh.");
+            return new RoomInventory();
+        }
     }
 }
 
@@ -42,14 +45,12 @@ public class BookMyStayApp {
 
     public static void main(String[] args) {
 
-        RoomInventory inventory = new RoomInventory();
+        PersistenceService service = new PersistenceService();
 
-        Thread t1 = new Thread(new BookingTask(inventory, "Alice"));
-        Thread t2 = new Thread(new BookingTask(inventory, "Bob"));
-        Thread t3 = new Thread(new BookingTask(inventory, "Charlie"));
+        RoomInventory inventory = service.load();
 
-        t1.start();
-        t2.start();
-        t3.start();
+        System.out.println("Current Inventory: " + inventory.getInventory());
+
+        service.save(inventory);
     }
 }
